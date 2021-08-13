@@ -1,5 +1,5 @@
 # This Repository
-Save WHAT I've done and learnt since starting the experience in Thai CaseMix Centre 
+Saves WHAT I've done and learnt since starting the experience in Thai CaseMix Centre 
 
 # Who are we (Thai-CaseMix-Centre) ??
 
