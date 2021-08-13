@@ -1,6 +1,7 @@
 # Thai-CaseMix-Centre (TCMC)
 What I've done and learnt since starting the experience in Thai CaseMix Centre 
 
+![logo](https://user-images.githubusercontent.com/88824754/129388993-79c90d2a-f978-458e-a658-73c2a868b9b1.png)
 
 
 # Who are we (TCMC)?
