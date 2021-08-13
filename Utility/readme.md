@@ -1,4 +1,4 @@
-Utility folder is kindda work made our office's utility better. 
+Utility folder is kinda work made our office's utility better. 
 The project in this folder composed of
 
   1. pptx Slide via Python
