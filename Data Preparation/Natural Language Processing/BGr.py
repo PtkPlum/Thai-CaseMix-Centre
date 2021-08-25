@@ -6,6 +6,7 @@ from time import time
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction import DictVectorizer
+from gensim import models
 
 def Time(Start):
     runTime = time() - Start
@@ -61,40 +62,74 @@ Key = list(Mod["Keyword"])
 Q1 = set(thnlp.corpus.common.thai_words())
 Q1.update(Key)
 Q2 = thnlp.tokenize.core.dict_trie(dict_source=Q1)
+X = {}
 
 for j in range(len(Ref)):
-    train = {}
-    Q3 = thnlp.word_vector.sentence_vectorizer(Ref["csname"][j])
-    for i in range(300):    
-        train[str(i)] = Q3[0][i]
-    for i in Key:
-        Q4 = thnlp.word_tokenize(Ref["csname"][j], custom_dict=Q2, keep_whitespace=False)
-        if i in Q4:
-            train[i] = 1
+    if Ref["csname"][j] == Ref["csname"][j]:
+        Q3 = thnlp.word_vector.sentence_vectorizer(Clean(Ref["csname"][j]))
+        train = [Q3[0][i] for i in range(300)]
+        for i in Key:
+            Q4 = thnlp.word_tokenize(Clean(Ref["csname"][j]), custom_dict=Q2, keep_whitespace=False)
+            if i in Q4:
+                train.append( 1 )
+            else:
+                train.append( 0 )
+    else:
+        train = [0 for i in range(300+len(Key))]
     Train.append(train)
     if j % 100 == 0 or j == len(Ref)-1:
-        print("\tWord2Vec : complete {} %".format(100 * (j+1)/len(Ref)))
+        print("Word2Vec : Train complete {} %".format(100 * (j+1)/len(Ref)))
 
-dv = DictVectorizer(sparse=True)
+Train = np.array(Train)
+Train = Train.transpose()
+for i in range(300):
+    X[str(i)] = Train[i]
+for j in Key:
+    i += 1
+    X[j] = Train[i]
+'''
+X["Class"] = label
+df = pd.DataFrame(X)
+df.to_excel("Input.xlsx", index=False)
+'''
+
 model = LogisticRegression()
-TrainSparse = dv.fit_transform(Train)
-model.fit(TrainSparse, label)
+Train = Train.transpose()
+model.fit(Train, label)
+print("\tFit model leaw")
 
-test = {}
-Q5 = thnlp.word_vector.sentence_vectorizer(BGr["ChargeName"][0])
-for i in range(300):    
-    test[str(i)] = Q5[0][i]
-for i in Key:
-    Q6 = thnlp.word_tokenize(Ref["csname"][j], custom_dict=Q2, keep_whitespace=False)
-    if i in Q6:
-        test[i] = 1
-test = [[test]]
-#model.predict(test)
+Test = []
+for j in range(len(BGr)):
+    Q3 = thnlp.word_vector.sentence_vectorizer(Clean(BGr["ChargeName"][j]))
+    test = [Q3[0][i] for i in range(300)]
+    for i in Key:
+        Q4 = thnlp.word_tokenize(Clean(BGr["ChargeName"][j]), custom_dict=Q2, keep_whitespace=False)
+        if i in Q4:
+            test.append( 1 )
+        else:
+            test.append( 0 )
+    Test.append(test)
+    if j % 100 == 0 or j == len(BGr)-1:
+        print("\t\tWord2Vec : Test complete {} %".format(100 * (j+1)/len(BGr)))
+    
+Result = []
+Class  = model.classes_
+Prob   = model.predict_proba(Test)
+for i in range(len(Prob)):
+    if max(Prob[i]) < 0.25:
+        Result.append( 0 )
+    else:
+        index = np.argmax(Prob[i])
+        Result.append( Class[index] )
+    if j % 100 == 0 or j == len(Prob)-1:
+        print("\t\t\tPredict Finalize : {} %".format(100 * (i+1)/len(Prob)))
+
+BGr["BGr"] = Result 
+BGr.to_excel("BGrPredict.xlsx", index=False)
 
 
 '''
-BGr["PredictBGr"] = PredictBGr
-BGr["CSName"] = CSName
-BGr.to_excel("Result.xlsx")
+model.intercept_
+model.coef_
 '''
 Time(Start)
