@@ -53,7 +53,7 @@ def EngOnly(word):
 
 Start = time()
 BGr = pd.read_excel("BGr.xlsx")
-Ref = pd.read_excel("Bg4ChargeCSCode.xlsx")
+Ref = pd.read_excel("Bg4ChargeCSCode.xlsx").   # Data privacy
 Mod = pd.read_excel("BGrRef.xlsx", sheet_name="Model")
 
 label = Ref["bgr"]
