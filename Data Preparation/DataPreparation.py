@@ -2,6 +2,8 @@ import pandas as pd
 import glob
 import os
 import numpy as np
+from time import time
+
 
 def UnitCostData(DataReport): # รวมชื่อแฟ้มทุกแฟ้มใน data dict
     Column = [i for i in DataReport]
@@ -24,22 +26,44 @@ def Character(shortfile): # มีฟิลด์ไหนที่ป็น cha
     CharField["hosbsub"]    =  ["hcode", "bgr", "bsub"]
     CharField["lbperson"]   =  ["hcode", "idcard"] # or Lb2CC
     CharField["doctor"]     =  ["hcode", "idcard", "licence"] # or LbDrWk or LbDrOT 
-    CharField["mat2i"]      =  ["hcode", "chargecode", "cscode"]
-    CharField["dmuc4"]      =  ["hcode", "bgr", "bsub", "chargecode", "cscode", "stdcode"]
+    CharField["matutil"]    =  ["hcode", "matgrp"]
+    CharField["matproj"]    =  ["hcode", "matgrp"]
+    CharField["mathire"]    =  ["hcode", "matgrp"]
+    CharField["matmsup"]    =  ["hcode", "matgrp"]
+    CharField["matlab"]     =  ["hcode", "matgrp"]
+    CharField["matdent"]    =  ["hcode", "matgrp"]
+    CharField["matdrug"]    =  ["hcode", "matgrp"]
+    CharField["matgen"]     =  ["hcode", "matgrp"]
+    CharField["mat2imsup"]  =  ["hcode", "chargecode", "cscode"]
+    CharField["mat2ilab"]   =  ["hcode", "chargecode", "cscode"]
+    CharField["mat2ioth"]   =  ["hcode", "chargecode", "cscode"]
+    CharField["mat2idrug"]  =  ["hcode", "chargecode", "cscode"]
+    CharField["dmuc4msup"]  =  ["hcode", "bgr", "bsub", "chargecode", "cscode", "stdcode"]
+    CharField["dmuc4lab"]   =  ["hcode", "bgr", "bsub", "chargecode", "cscode", "stdcode"]
+    CharField["dmuc4oth"]   =  ["hcode", "bgr", "bsub", "chargecode", "cscode", "stdcode"]
     CharField["dmuc4drug"]  =  ["hcode", "bgr", "bsub", "chargecode", "tmttpu", "code24"]
     CharField["hosdep"]     =  ["hcode", "depcode"]
-    CharField["opmain"]     =  ["hcode", "vn", "hn", "pidpat", "timeopd", "clinic", "hmain"]
-    CharField["ipmain"]     =  ["hcode", "an", "hn", "pidpat", "timeadm", "timedsc", "wardadm", "warddsc", "hmain"]
+    CharField["opmain"]     =  ["hcode", "vn", "hn", "pidpat", "timeopd", "clinic", "hmain", "inscl"]
+    CharField["ipmain"]     =  ["hcode", "an", "hn", "pidpat", "timeadm", "timedsc", "wardadm", "warddsc", "hmain", "inscl"]
     CharField["ortime"]     =  ["hcode", "ornumber", "vn", "hn", "an", "timebeg"]
     CharField["orperson"]   =  ["hcode", "ornumber", "vn", "hn", "an", "timebeg", "idcard"]
     CharField["bg4charge"]  =  ["hcode", "chargecode", "code24", "bgr", "cscode", "stdcode", "bsub"]
-    CharField["charge"]     =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
+    CharField["allcharge"]  =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
+    CharField["allcharge"]  =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
+    CharField["allcharge1"] =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
+    CharField["allcharge2"] =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
+    CharField["bg4charge"]  =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
+    CharField["ipcharge"]   =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
+    CharField["opcharge"]   =  ["hcode", "an", "vn", "hn", "chargecode", "bgr", "depcode", "pttype"]
     CharField["er"]         =  ["hcode", "an", "vn", "hn", "pidpat", "timein", "timeout"]
-    CharField["iptransfer"] =  ["hcode", "an", "hn", "pidpat", "timein", "wardin", "wardout"]
+    CharField["iptransfer"] =  ["hcode", "an", "hn", "pidpat", "timein", "wardin", "wardout", "wdin", "wdout"]
     CharField["ipdxop"]     =  ["hcode", "an", "hn"]
     CharField["opdxop"]     =  ["hcode", "vn", "hn", "code"]
     CharField["instype"]    =  ["hcode", "inscl", "pttype"]
     CharField["palliative"] =  ["hcode", "an", "hn", "pidpat", "pdx"]
+    CharField["dccdist"]    =  ["hcode", "ccid", "ccname"]
+    CharField["d2bdefs"]    =  ["hcode", "distname", "bsub", "bsdesc"]
+    
     for i in CharField:
         if shortfile.lower() == i:
             return CharField[i]
@@ -54,46 +78,60 @@ def GivenFieldName(df, CharFieldFormat): # รพ.ตั้งชื่อฟิ
     return CharFieldName
 
 
-def ImportData(file): 
+def ImportData(file):
     fileName, Surnamefile = Name(file)
-    if Surnamefile == "xlsx" or Surnamefile == "xlx":
-        df = pd.read_excel(file)
+    if Surnamefile == "xlsx" or Surnamefile == "xlx" or Surnamefile == "xls":
+        df = pd.read_excel(file, skiprows=range(100000, 10000000))
     elif Surnamefile == "csv":
-        return pd.read_csv(file)
+        df = pd.read_csv(file, skiprows=range(100000, 10000000))
+        
     CharFieldFormat = Character(fileName)
-    CharFieldName = GivenFieldName(df, CharFieldFormat)
+    CharFieldName   = GivenFieldName(df, CharFieldFormat)
     convert = {}
     for i in CharFieldName:
         convert[i] = str
-    if Surnamefile == "xlsx" or Surnamefile == "xlx":
-        return pd.read_excel(file, converters=convert)
+    if Surnamefile == "xlsx" or Surnamefile == "xlx" or Surnamefile == "xls":
+        Excel = pd.ExcelFile(file)
+        ExcelDict = {}
+        for i in Excel.sheet_names:
+            ExcelDict[i] = pd.read_excel(file, sheet_name=i)
+        return [pd.read_excel(file, converters=convert)]
     elif Surnamefile == "csv":
-        return pd.read_csv(file, converters=convert)
+        return [pd.read_csv(file, converters=convert)]
 
     
 def Save(file, df, name=""):
-    if name == "":
-       name = Name(file)[0]
+    name = Name(file)[0] if name == "" else name
     df.to_csv("FileResultText\\" + name + ".txt", index=None, sep='|', mode='w')
     df.to_excel("FileResultExcel\\" + name + ".xlsx", index=None)
     print("เซฟไฟล์ " + name + ".txt เรียบร้อย")
     
+Start = time()
 
-AllFile = glob.glob('*.xlx') + glob.glob('*.xlsx') + glob.glob('*.csv')
-dataReport = pd.read_excel("Report\EmptyDataReport.xlsx")
-dataReport["nFile"] = [0 for i in dataReport["nFile"]]
+AllFile = glob.glob('*.xlx') + glob.glob('*.xlsx') + glob.glob('*.xls') #+ glob.glob('*.csv')
+#dataReport = pd.read_excel("Report\Reference\EmptyDataReport.xlsx")
+#dataReport["nFile"] = [0 for i in dataReport["nFile"]]
 
 i = 1
 for file in AllFile:
     print("ไฟล์ที่ ", i)
-    df = ImportData(file)
-    print("โหลด " + file + " เรียบร้อย")
-    
-    Save(file, df)
+    dfList = ImportData(file)    
+    for j in dfList:
+        print("โหลด " + file + " เรียบร้อย")
+        Save(file, j)
+
     print("------------------------------------------\n")
     i += 1
-    
-dataReport.to_excel("Report\DataReport.xlsx", index=False)
+
+runTime = time() - Start
+if runTime < 60:    
+    print("เรียบร้อย ใช้เวลารันไป", round(runTime, 2), "วินาที")
+elif runTime < 60 * 60:
+    print("เรียบร้อย ใช้เวลารันไป", int(runTime / 60), "นาที", round(runTime % 60, 2), "วินาที")
+else:
+    print("เรียบร้อย ใช้เวลารันไป", int(runTime / (60 * 60)), "ชั่วโมง", int((runTime % 60 * 60) // 60), "นาที", round(runTime % 60, 2), "วินาที")
+
+#dataReport.to_excel("Report\DataReport.xlsx", index=False)
 '''
 ||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 \\\\\\\\\\\\\\\\\\\\\\\\\\                       ////////////////////////////
